@@ -8,14 +8,12 @@ Get-Event | Remove-Event -ErrorAction SilentlyContinue
 Write-Host "[+] Monitoring started at: $($now.ToString())" -ForegroundColor Gray
 Write-Host "[+] Waiting for NEW HID keyboard insertions..." -ForegroundColor Cyan
 
-
 Register-WmiEvent -Query "SELECT * FROM __InstanceCreationEvent WITHIN 1 
     WHERE TargetInstance ISA 'Win32_NTLogEvent'
     AND TargetInstance.EventCode = '6416'
     AND TargetInstance.Logfile = 'Security'
     AND TargetInstance.TimeGenerated > '$bootTime'" `
     -SourceIdentifier 'Keyboard6416' | Out-Null
-
 
 Register-WmiEvent -Query "SELECT * FROM __InstanceCreationEvent WITHIN 1
     WHERE TargetInstance ISA 'Win32_NTLogEvent'
@@ -26,7 +24,6 @@ Register-WmiEvent -Query "SELECT * FROM __InstanceCreationEvent WITHIN 1
 
 
 while ($true) {
-
     $kbdEvent = Wait-Event -SourceIdentifier 'Keyboard6416'
     $kbdObj   = $kbdEvent.SourceEventArgs.NewEvent.TargetInstance
     $strings  = $kbdObj.InsertionStrings
@@ -81,4 +78,6 @@ while ($true) {
     }
 
     Remove-Event -EventIdentifier $kbdEvent.EventIdentifier -ErrorAction SilentlyContinue
+    
+    Get-Event -SourceIdentifier 'Keyboard6416' -ErrorAction SilentlyContinue | Remove-Event
 }

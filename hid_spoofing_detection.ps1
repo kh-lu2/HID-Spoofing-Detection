@@ -67,9 +67,10 @@ while ($true) {
                 $procObj   = $psEvent.SourceEventArgs.NewEvent.TargetInstance
                 $procName  = $procObj.InsertionStrings[5] 
                 
-                if ($procName -match 'powershell|cmd') {
+                if ($procName -match 'powershell.exe|cmd.exe') {
                     Write-Host "!!! HACKED HACKED HACKED: $procName spawned !!!" -ForegroundColor Red
                     $suspiciousFound = $true
+                    break
                 }
                 Remove-Event -EventIdentifier $psEvent.EventIdentifier -ErrorAction SilentlyContinue
             }

@@ -26,14 +26,33 @@ Register-WmiEvent -Query "SELECT * FROM __InstanceCreationEvent WITHIN 1
 
 
 while ($true) {
+
     $kbdEvent = Wait-Event -SourceIdentifier 'Keyboard6416'
     $kbdObj   = $kbdEvent.SourceEventArgs.NewEvent.TargetInstance
     $strings  = $kbdObj.InsertionStrings
 
     if ($strings -and ($strings -join ' ') -match 'HID Keyboard Device') {
-
         $time = (Get-Date).ToString("HH:mm:ss")
-        Write-Host "`n[!] NEW HID Keyboard detected at $time" -ForegroundColor Yellow
+
+        # Attempt to extract VID and PID from the event strings
+
+        $vid = $null
+        $devPid = $null
+        foreach ($str in $strings) {
+            if ($str -match 'VID_([0-9A-Fa-f]{4})') { $vid = $matches[1] }
+            if ($str -match 'PID_([0-9A-Fa-f]{4})') { $devPid = $matches[1] }
+        }
+
+        $idMsg = ""
+        if ($vid -and $devPid) {
+            $idMsg = " (VID: $vid, PID: $devPid)"
+        } elseif ($vid) {
+            $idMsg = " (VID: $vid)"
+        } elseif ($devPid) {
+            $idMsg = " (PID: $devPid)"
+        }
+
+        Write-Host "`n[!] NEW HID Keyboard detected at $time$idMsg" -ForegroundColor Yellow
         Write-Host "[>] Watching for PowerShell / CMD (10s window)..." -ForegroundColor Green
 
         $windowEnd = (Get-Date).AddSeconds(10)

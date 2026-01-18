@@ -34,8 +34,6 @@ while ($true) {
     if ($strings -and ($strings -join ' ') -match 'HID Keyboard Device') {
         $time = (Get-Date).ToString("HH:mm:ss")
 
-        # Attempt to extract VID and PID from the event strings
-
         $vid = $null
         $devPid = $null
         foreach ($str in $strings) {
